@@ -5,14 +5,14 @@ import {
   useContext,
   useEffect,
   useState,
-  useCallback
+  useCallback,
 } from "react";
 type AuthContextType = {
-  //Nag create ta ug Type pra sa AuthContext
-  token: string | null; // Dri nag declare ta sa token ug string or null(wala)
-  setToken: (token: string | null) => void; //gi include pud ang setToken nga function nga ang sulod sa parameter is only token nga string
-  logout: () => void; //last kay nag include ghapon sa logout function
-  login: (email: string, password: string) => void; //last kay nag include ghapon sa logout function
+  token: string | null;
+  setToken: (token: string | null) => void;
+  role: string | null;
+  logout: () => void;
+  login: (email: string, password: string) => void;
 };
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -22,6 +22,7 @@ const LogoutLink = `${process.env.NEXT_PUBLIC_APP_URL}/logout`;
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const route = useRouter();
   const [token, setTokenState] = useState<string | null>(null);
+  const [role, setRoles] = useState<string | null>(null);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -37,34 +38,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setTokenState(token);
   };
 
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      const reslog = await fetch(loginAPI, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json"
-        },
-        body: JSON.stringify({ email, password})
-      });
+  const login = useCallback(
+    async (email: string, password: string) => {
+      try {
+        const reslog = await fetch(loginAPI, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        });
 
-      if (!reslog.ok) {
-        console.log("Error: ", reslog.status);
+        if (!reslog.ok) {
+          console.log("Error: ", reslog.status);
+        }
+
+        const data = await reslog.json();
+        if (data.access_token) {
+          if (data.role) {
+            const roles = data.role;
+            setRoles(roles);
+            localStorage.setItem("token", data.access_token);
+            setToken(data.access_token);
+            console.log(data);
+
+            switch (role) {
+              case "requestor":
+                return route.replace("/user/UserDashboard");
+              case "admin":
+                return route.replace("/admin/Display");
+            }
+          }
+        }
+
+        return { ...data, status: reslog?.status };
+      } catch (error) {
+        console.log("Error: ", error);
       }
-
-      const data = await reslog.json();
-      if(data.access_token)
-      {
-        localStorage.setItem("token", data.access_token);
-        setToken(data.access_token);
-        route.replace("/admin/Display");
-      }
-
-    } catch (error) {
-      console.log("Error: ", error);
-    }
-  }, [route]);
-
+    },
+    [route, role]
+  );
 
   const logout = useCallback(async () => {
     try {
@@ -85,17 +99,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       setToken(null);
+      setRoles(null);
+      localStorage.removeItem("token");
+      localStorage.removeItem("UserRole");
       route.replace("/");
     } catch (error) {
       console.log("Error: ", error);
     } finally {
+      localStorage.removeItem("UserRole");
+      localStorage.removeItem("token");
       setToken(null);
+      setRoles(null);
       route.replace("/");
     }
   }, [route]);
 
   return (
-    <AuthContext.Provider value={{ token, setToken, logout, login }}>
+    <AuthContext.Provider value={{ token, setToken, logout, login, role }}>
       {children}
     </AuthContext.Provider>
   );

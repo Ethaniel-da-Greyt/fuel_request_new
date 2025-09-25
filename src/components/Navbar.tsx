@@ -4,7 +4,7 @@ import Link from "next/link";
 import React from "react";
 
 const Navbar = () => {
-  const { token, logout } = useAuth();
+  const { token, logout, role } = useAuth();
   return (
     <div>
       <div className="navbar bg-base-100 shadow-sm">
@@ -55,24 +55,32 @@ const Navbar = () => {
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
             >
               {token ? (
-                <>
-                  <li>
-                    <a className="justify-between">
-                      Profile
-                      <span className="badge">New</span>
-                    </a>
-                  </li>
-                  <li>
-                    <Link href={"Display"}>Active Requests</Link>
-                  </li>
-                  <li>
-                    <Link href={"History_Request"}>Request History</Link>
-                  </li>
+                role !== "requestor" ? (
+                  <>
+                    <li>
+                      <a className="justify-between">
+                        Profile
+                        <span className="badge">New</span>
+                      </a>
+                    </li>
+                    <li>
+                      <Link href={"Display"}>Active Requests</Link>
+                    </li>
+                    <li>
+                      <Link href={"History_Request"}>Request History</Link>
+                    </li>
 
-                  <li>
-                    <button onClick={logout}>Logout</button>
-                  </li>
-                </>
+                    <li>
+                      <button onClick={logout}>Logout</button>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <button onClick={logout}>Logout</button>
+                    </li>
+                  </>
+                )
               ) : (
                 <li>
                   <Link href={"/login"}>Login</Link>

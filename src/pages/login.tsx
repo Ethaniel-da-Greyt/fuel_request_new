@@ -1,12 +1,14 @@
 import React, { useCallback, useState } from "react";
 import { Login as LoginType } from "../types/login";
-import { useRouter } from "next/router";
 import { ApiResponse, LaravelResponse } from "@/types/ApiResponse";
 import { useAuth } from "@/context/AuthContext";
 
 const Login = () => {
-  const { setToken } = useAuth();
-  const [login, setLogin] = useState<LoginType>({ email: "", password: "" });
+  const { login } = useAuth();
+  const [logUser, setLogUser] = useState<LoginType>({
+    email: "",
+    password: "",
+  });
   const [errmsg, setErrmsg] = useState<ApiResponse>({
     status: 0,
     message: "",
@@ -18,52 +20,29 @@ const Login = () => {
     error: "",
   });
 
-  const route = useRouter();
-
   const log = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({ email: login.email, password: login.password }),
-      });
-
-      if (!res.ok) {
-        console.log("Error API");
-      }
-
-      const data = await res.json();
-
-      if (data.access_token) {
-        setToken(data.access_token);
-        localStorage.setItem("token", data.access_token);
-        route.push("/admin/Display");
-      } else {
+      try {
+        const userlog = await login(logUser.email, logUser.password);
+        if (!userlog?.access_token) {
+          setErrmsg({
+            status: userlog?.status ?? 401,
+            message: userlog?.message ?? "",
+            error: userlog?.error ?? "",
+          });
+          console.log("Error: ", userlog?.status);
+        }
+      } catch (error) {
         setErrmsg({
-          status: data?.status,
-          message: data?.message,
-          error: data?.error,
+          status: 500,
+          message: "Something went wrong",
+          error: String(error),
         });
-
-        setLaravelRes({
-          status: data?.status,
-          error: data?.error,
-        });
-
-        console.log("Error", laravelres);
+        console.log("Error: ", error);
       }
-
-      if (errmsg.error) {
-        alert(errmsg.error);
-      }
-
-      console.log("data", data);
     },
-    [login, route, errmsg, laravelres, setToken]
+    [logUser, login]
   );
 
   return (
@@ -103,8 +82,10 @@ const Login = () => {
               type="email"
               className="input mb-4 focus:outline-0"
               placeholder="Email"
-              value={login.email}
-              onChange={(e) => setLogin({ ...login, email: e.target.value })}
+              value={logUser.email}
+              onChange={(e) =>
+                setLogUser({ ...logUser, email: e.target.value })
+              }
             />
 
             <label className="label">Password</label>
@@ -112,8 +93,10 @@ const Login = () => {
               type="password"
               className="input mb-2 focus:outline-0"
               placeholder="Password"
-              value={login.password}
-              onChange={(e) => setLogin({ ...login, password: e.target.value })}
+              value={logUser.password}
+              onChange={(e) =>
+                setLogUser({ ...logUser, password: e.target.value })
+              }
             />
 
             <div className="mt-4">

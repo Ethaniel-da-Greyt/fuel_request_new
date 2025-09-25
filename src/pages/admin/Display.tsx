@@ -1,21 +1,25 @@
-import { useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import Dashboard from "./dashboard";
 import { Request } from "@/types/Request";
 import { ApiResponse } from "@/types/ApiResponse";
+import { useRouter } from "next/router";
 
 const getData = `${process.env.NEXT_PUBLIC_APP_URL}/fuel-requests`;
 const getApprove = `${process.env.NEXT_PUBLIC_APP_URL}/approve`;
 const getReject = `${process.env.NEXT_PUBLIC_APP_URL}/reject`;
 
 const Display = () => {
+  const route = useRouter();
   const [data, setData] = useState<Request[]>([]);
+  const [search, setSearch] = useState("");
   const [errmsg, setErrmsg] = useState<ApiResponse>({
     status: 0,
     error: "",
     message: "",
   });
-  const request = useCallback(async () => {
-    const res = await fetch(getData, {
+
+  const request = useCallback(async (search = "") => {
+    const res = await fetch(`${getData}?search=${search}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -33,6 +37,11 @@ const Display = () => {
     setData(response.data);
   }, []);
 
+  const handleSearch = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    request(search);
+  };
+
   const approveBtn = async (r_id: number) => {
     try {
       const appr = await fetch(`${getApprove}/` + r_id);
@@ -47,7 +56,9 @@ const Display = () => {
         message: resp.message ?? "",
       });
 
-      window.alert("Request Approve Successfully");
+      if (resp) {
+        window.alert("Request Approve Successfully");
+      }
 
       console.log(resp.message);
     } catch (error) {
@@ -77,16 +88,45 @@ const Display = () => {
     }
   };
 
+  const badger = (status: string) => {
+    switch (status) {
+      case "approve":
+        return "badge-success";
+      case "reject":
+        return "badge-error";
+      case "pending":
+        return "badge-warning";
+    }
+  };
+
   useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      route.replace("/");
+    }
+    const UserRole = localStorage.getItem("UserRole");
+    if (UserRole !== "admin") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("UserRole");
+      route.replace("/");
+    }
     request();
-  }, [request]);
+  }, [request, route]);
 
   return (
     <>
       <Dashboard>
-        <div className="rounded-2xl p-4  shadow m-4">
-          <form>
-            <input type="text" className="input" placeholder="Search here..." />
+        <div className="rounded-2xl p-4 shadow m-4">
+          <form onSubmit={handleSearch}>
+            <input
+              type="text"
+              className="input focus: outline-0"
+              placeholder="Search here..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <p className="text-xs textarea-ghost">
+              Search Records Here approved, rejected, and pending.
+            </p>
           </form>
         </div>
         <div className="flex justify-center m-4">
@@ -113,7 +153,11 @@ const Display = () => {
                       <td>{d.requestor_office}</td>
                       <td>{d.fuel_type}</td>
                       <td>
-                        <span className="badge badge-warning text-white font-semibold">
+                        <span
+                          className={`badge ${badger(
+                            d.status
+                          )} text-white font-semibold`}
+                        >
                           {d.status}
                         </span>
                       </td>
@@ -197,18 +241,24 @@ const Display = () => {
                             <div className="modal-action">
                               <form>
                                 <div className="flex gap-2">
-                                  <button
-                                    onClick={() => approveBtn(d.id)}
-                                    className="btn btn-success text-white rounded-2xl"
-                                  >
-                                    Approve
-                                  </button>
-                                  <button
-                                    onClick={() => rejectBtn(d.id)}
-                                    className="btn btn-error text-white rounded-2xl"
-                                  >
-                                    Reject
-                                  </button>
+                                  {d.status == "pending" ? (
+                                    <>
+                                      <button
+                                        onClick={() => approveBtn(d.id)}
+                                        className="btn btn-success text-white rounded-2xl"
+                                      >
+                                        Approve
+                                      </button>
+                                      <button
+                                        onClick={() => rejectBtn(d.id)}
+                                        className="btn btn-error text-white rounded-2xl"
+                                      >
+                                        Reject
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <></>
+                                  )}
                                 </div>
                               </form>
                             </div>

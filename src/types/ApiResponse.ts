@@ -1,7 +1,9 @@
 export type ApiResponse = {
-  status: number;
-  message: string;
-  error: string;
+  access_token?: string;
+  role?: string;
+  message?: string;
+  error?: string;
+  status?: number;
 };
 
 export type LaravelResponse = {
