@@ -57,17 +57,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const data = await reslog.json();
         if (data.access_token) {
           if (data.role) {
-            const roles = data.role;
-            setRoles(roles);
+            setRoles(data.role);
+            localStorage.setItem("role", data.role);
             localStorage.setItem("token", data.access_token);
             setToken(data.access_token);
             console.log(data);
 
-            switch (role) {
+            switch (data.role) {
               case "requestor":
                 return route.replace("/user/UserDashboard");
+                break;
               case "admin":
                 return route.replace("/admin/Display");
+                break;
+              default:
+                localStorage.removeItem("token");
+                localStorage.removeItem("role");
+                return route.replace("/");
+                break;
             }
           }
         }
@@ -77,7 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log("Error: ", error);
       }
     },
-    [route, role]
+    [route]
   );
 
   const logout = useCallback(async () => {

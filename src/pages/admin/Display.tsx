@@ -103,10 +103,10 @@ const Display = () => {
     if (!localStorage.getItem("token")) {
       route.replace("/");
     }
-    const UserRole = localStorage.getItem("UserRole");
+    const UserRole = localStorage.getItem("role");
     if (UserRole !== "admin") {
       localStorage.removeItem("token");
-      localStorage.removeItem("UserRole");
+      localStorage.removeItem("role");
       route.replace("/");
     }
     request();

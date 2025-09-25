@@ -1,5 +1,4 @@
 import { useAuth } from "@/context/AuthContext";
-import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
@@ -12,11 +11,6 @@ const Navbar = () => {
           <a className="btn btn-ghost text-xl">Fuel Request</a>
         </div>
         <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Search"
-            className="input input-bordered w-24 md:w-auto"
-          />
           <div className="dropdown dropdown-end">
             <div
             //   tabIndex={0}
