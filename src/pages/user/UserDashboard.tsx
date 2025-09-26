@@ -1,5 +1,4 @@
 import Layout from "@/components/Layout";
-import { useAuth } from "@/context/AuthContext";
 import { Request } from "@/types/Request";
 import React, { FormEvent, useCallback, useEffect, useState } from "react";
 
@@ -45,7 +44,7 @@ const UserDashboard = () => {
     });
 
     if (!updt) {
-      console.log("Error: ", updt?.error);
+      console.log("Error: ", updt);
     }
 
     const up = await updt.json();
@@ -65,7 +64,7 @@ const UserDashboard = () => {
     });
 
     if (!res.ok) {
-      console.log("Error: ", res?.error);
+      console.log("Error: ", res);
     }
     const data = await res.json();
 
