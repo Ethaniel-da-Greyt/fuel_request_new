@@ -44,7 +44,13 @@ const Display = () => {
 
   const approveBtn = async (r_id: number) => {
     try {
-      const appr = await fetch(`${getApprove}/` + r_id);
+      const appr = await fetch(`${getApprove}/` + r_id, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
 
       if (!appr.ok) {
         console.log("Fail to Approve");
