@@ -61,6 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (data.role) {
             setRoles(data.role);
             localStorage.setItem("role", data.role);
+            localStorage.setItem("id", data.userId);
             localStorage.setItem("token", data.access_token);
             setToken(data.access_token);
             console.log(data);
@@ -73,6 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 return route.replace("/admin/Display");
                 break;
               default:
+                localStorage.removeItem("id");
                 localStorage.removeItem("token");
                 localStorage.removeItem("role");
                 return route.replace("/");
@@ -109,13 +111,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setToken(null);
       setRoles(null);
+      localStorage.removeItem("id");
       localStorage.removeItem("token");
       localStorage.removeItem("UserRole");
       route.replace("/");
     } catch (error) {
       console.log("Error: ", error);
     } finally {
-      localStorage.removeItem("UserRole");
+      localStorage.removeItem("id");
+      localStorage.removeItem("role");
       localStorage.removeItem("token");
       setToken(null);
       setRoles(null);
