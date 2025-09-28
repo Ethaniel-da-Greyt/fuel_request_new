@@ -1,0 +1,14 @@
+{
+    "fuel_requests" : {
+        "request_id" : "FR-010",
+        "date_requested": "September 25, 2025",
+        "requestor_id" : "2",
+        "requestor_name" : "Manny",
+        "requestor_office" : "Office of the President",
+        "requestor_head_office" : "Bobong Marcos",
+        "plate_no" : "KS8D65D",
+        "vehicle" : "Vios",
+        "fuel_type" : "Diesel",
+        "status" : "pending"
+    }
+}

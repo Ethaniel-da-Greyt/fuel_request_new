@@ -7,6 +7,7 @@ import {
   useState,
   useCallback,
 } from "react";
+
 type AuthContextType = {
   token: string | null;
   setToken: (token: string | null) => void;
@@ -14,6 +15,7 @@ type AuthContextType = {
   logout: () => void;
   login: (email: string, password: string) => void;
 };
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const loginAPI = `${process.env.NEXT_PUBLIC_APP_URL}/login`;

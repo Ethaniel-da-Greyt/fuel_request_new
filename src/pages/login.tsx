@@ -20,6 +20,8 @@ const Login = () => {
     error: "",
   });
 
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
+
   const log = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -46,11 +48,11 @@ const Login = () => {
   );
 
   return (
-    <div className="flex justify-center items-end h-150 ">
+    <div className="flex justify-center items-end">
       <div className="">
         <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
-          <legend className="fieldset-legend mb-3 text-center text-2xl">
-            Login
+          <legend className="fieldset-legend text-center text-2xl">
+            {isLoggedIn == true ? "Login" : "Register"}
           </legend>
           {errmsg.message && (
             <div role="alert" className="alert alert-warning">
@@ -77,6 +79,17 @@ const Login = () => {
             </div>
           )}
           <form onSubmit={log}>
+            {!isLoggedIn && (
+              <>
+                <label className="label">Name</label>
+                <input
+                  type="text"
+                  className="input mb-2 focus:outline-0"
+                  placeholder="Name"
+                />
+              </>
+            )}
+
             <label className="label">Email</label>
             <input
               type="email"
@@ -99,11 +112,23 @@ const Login = () => {
               }
             />
 
+            {!isLoggedIn && (
+              <>
+                <label className="label">Confirm Password</label>
+                <input
+                  type="password"
+                  className="input mb-2 focus:outline-0"
+                  placeholder="Confirm Password"
+                />
+
+              </>
+            )}
             <div className="mt-4">
-              <button className="btn btn-primary w-full " type="submit">
-                Login
+              <button className="btn btn-primary w-full" type="submit">
+                {!isLoggedIn ? "Register" : "Login"}
               </button>
             </div>
+            <p>{isLoggedIn ? "Don&apos;t have an account? " : "Already have an account? "}<span style={{cursor: "pointer"}} onClick={() => setIsLoggedIn(!isLoggedIn)}>{isLoggedIn ? "Register Here" : "Login Here"}</span></p>
           </form>
         </fieldset>
       </div>
