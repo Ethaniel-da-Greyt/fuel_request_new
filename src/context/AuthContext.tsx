@@ -1,3 +1,4 @@
+import { error } from "console";
 import { useRouter } from "next/router";
 import {
   createContext,
@@ -7,18 +8,37 @@ import {
   useState,
   useCallback,
 } from "react";
+import toast from "react-hot-toast";
+
+interface RegResponse {
+  error?: string;
+  message?: string;
+}
+
+interface LoginRes {
+  status?: number;
+  error?: string;
+  message?: string;
+}
 
 type AuthContextType = {
   token: string | null;
   setToken: (token: string | null) => void;
   role: string | null;
   logout: () => void;
-  login: (email: string, password: string) => void;
+  login: (email: string, password: string) => Promise<LoginRes | undefined>;
+  register: (
+    email: string,
+    password: string,
+    name: string,
+    password_confirmation: string
+  ) => Promise<RegResponse | undefined>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const loginAPI = `${process.env.NEXT_PUBLIC_APP_URL}/login`;
+const SignupAPI = `${process.env.NEXT_PUBLIC_APP_URL}/signup`;
 const LogoutLink = `${process.env.NEXT_PUBLIC_APP_URL}/logout`;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -40,6 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setTokenState(token);
   };
 
+  //login
   const login = useCallback(
     async (email: string, password: string) => {
       try {
@@ -52,11 +73,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           body: JSON.stringify({ email, password }),
         });
 
-        if (!reslog.ok) {
-          console.log("Error: ", reslog.status);
-        }
-
         const data = await reslog.json();
+        if (!reslog.ok) {
+          return {
+            error: data?.error || "Login Failed",
+            message: data?.message,
+            status: data?.status || 400,
+          };
+        }
+        toast.success("Login Successfully");
         if (data.access_token) {
           if (data.role) {
             setRoles(data.role);
@@ -68,28 +93,69 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
             switch (data.role) {
               case "requestor":
-                return route.replace("/user/UserDashboard");
+                route.replace("/user/UserDashboard");
                 break;
               case "admin":
-                return route.replace("/admin/Display");
+                route.replace("/admin/Display");
                 break;
               default:
                 localStorage.removeItem("id");
                 localStorage.removeItem("token");
                 localStorage.removeItem("role");
-                return route.replace("/");
+                route.replace("/");
                 break;
             }
           }
         }
 
-        return { ...data, status: reslog?.status };
+        return {
+          ...data,
+          error: data?.error,
+          message: data?.message,
+          status: data?.status || 400,
+        };
       } catch (error) {
         console.log("Error: ", error);
       }
     },
     [route]
   );
+
+  //register
+  const register = async (
+    name: string,
+    email: string,
+    password: string,
+    password_confirmation: string
+  ) => {
+    try {
+      const res = await fetch(SignupAPI, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ name, email, password, password_confirmation }),
+      });
+
+      const response = await res.json();
+      if (!res.ok) {
+        toast.error("Failed to register");
+
+        return { error: response?.error, message: response?.message };
+      }
+
+      toast.success("Registered Successfully");
+
+      return {
+        ...response,
+        error: response?.error,
+        message: response?.message,
+      };
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
 
   const logout = useCallback(async () => {
     try {
@@ -105,7 +171,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const response = await res.json();
 
-      if (!response.ok) {
+      if (!response) {
         console.error("Error");
       }
 
@@ -118,17 +184,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.log("Error: ", error);
     } finally {
+      setToken(null);
+      setRoles(null);
       localStorage.removeItem("id");
       localStorage.removeItem("role");
       localStorage.removeItem("token");
-      setToken(null);
-      setRoles(null);
       route.replace("/");
     }
   }, [route]);
 
   return (
-    <AuthContext.Provider value={{ token, setToken, logout, login, role }}>
+    <AuthContext.Provider
+      value={{ token, setToken, logout, login, role, register }}
+    >
       {children}
     </AuthContext.Provider>
   );

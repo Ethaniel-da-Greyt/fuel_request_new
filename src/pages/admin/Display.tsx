@@ -3,6 +3,8 @@ import Dashboard from "./dashboard";
 import { Request } from "@/types/Request";
 import { ApiResponse } from "@/types/ApiResponse";
 import { useRouter } from "next/router";
+import Modal from "@/components/Modal";
+import { useFuel } from "@/context/FuelRequestContext";
 
 const getData = `${process.env.NEXT_PUBLIC_APP_URL}/fuel-requests`;
 const getApprove = `${process.env.NEXT_PUBLIC_APP_URL}/approve`;
@@ -10,6 +12,7 @@ const getReject = `${process.env.NEXT_PUBLIC_APP_URL}/reject`;
 
 const Display = () => {
   const route = useRouter();
+  const { reject, approveRequest } = useFuel();
   const [data, setData] = useState<Request[]>([]);
   const [search, setSearch] = useState("");
   const [errmsg, setErrmsg] = useState<ApiResponse>({
@@ -42,53 +45,16 @@ const Display = () => {
     request(search);
   };
 
-  const approveBtn = async (r_id: number) => {
+  const rejectBtn = async (id: string) => {
     try {
-      const appr = await fetch(`${getApprove}/` + r_id, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
-
-      if (!appr.ok) {
-        console.log("Fail to Approve");
-      }
-      const resp: ApiResponse = await appr.json();
-      setErrmsg({
-        status: resp.status ?? 0,
-        error: resp.error ?? "",
-        message: resp.message ?? "",
-      });
-
-      if (resp) {
-        window.alert("Request Approve Successfully");
-      }
-
-      console.log(resp.message);
+      if (await reject(id)) request();
     } catch (error) {
       console.log("Error: ", error);
     }
   };
-
-  const rejectBtn = async (r_id: number) => {
+  const approveBtn = async (r_id: string) => {
     try {
-      const reject = await fetch(`${getReject}/` + r_id);
-
-      if (!reject.ok) {
-        console.log("Fail to Approve");
-      }
-      const resp: ApiResponse = await reject.json();
-      setErrmsg({
-        status: resp.status ?? 0,
-        error: resp.error ?? "",
-        message: resp.message ?? "",
-      });
-
-      if (errmsg.message) {
-        console.log(errmsg.message);
-      }
+      if (await approveRequest(r_id)) request();
     } catch (error) {
       console.log("Error: ", error);
     }

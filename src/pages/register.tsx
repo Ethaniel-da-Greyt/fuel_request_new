@@ -1,53 +1,44 @@
-import React, { useCallback, useState } from "react";
-import { Login as LoginType } from "../types/login";
-import { ErrorMsg } from "@/types/ApiResponse";
 import { useAuth } from "@/context/AuthContext";
+import { ErrorMsg } from "@/types/ApiResponse";
+import { Signup } from "@/types/signup";
 import Link from "next/link";
+import React, { useState } from "react";
 
-const Login = () => {
-  const { login } = useAuth();
-  const [logUser, setLogUser] = useState<LoginType>({
+const Register = () => {
+  const { register } = useAuth();
+  const [signup, setSignUp] = useState<Signup>({
     email: "",
     password: "",
+    name: "",
+    password_confirmation: "",
   });
-
   const [errmsg, setErrmsg] = useState<ErrorMsg>({
     message: "",
     error: "",
   });
 
-  const log = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      try {
-        const logg = await login(logUser.email, logUser.password);
-        // console.log(logg);
+  const reg = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const regstr = await register(
+      signup.name,
+      signup.email,
+      signup.password,
+      signup.password_confirmation
+    );
 
-        if (logg?.error) {
-          setErrmsg({
-            error: logg?.error,
-            message: logg?.message,
-          });
-
-          console.log(errmsg.error);
-        }
-      } catch (error) {
-        setErrmsg({
-          message: "Something went wrong",
-          error: String(error),
-        });
-        console.log("Error: ", error);
-      }
-    },
-    [logUser, login, errmsg]
-  );
-
+    if (regstr?.error) {
+      setErrmsg({
+        message: regstr?.message,
+        error: regstr?.error,
+      });
+    }
+  };
   return (
     <div className="flex justify-center items-end">
       <div className="">
         <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
           <legend className="fieldset-legend text-center text-2xl">
-            Login
+            Register
           </legend>
           {errmsg.message && (
             <div role="alert" className="alert alert-warning">
@@ -73,17 +64,26 @@ const Login = () => {
               </button>
             </div>
           )}
-          <form onSubmit={log}>
+          <form onSubmit={reg}>
             <>
+              <label className="label">Name</label>
+              <input
+                type="text"
+                className="input mb-4 focus:outline-0"
+                placeholder="Email"
+                required
+                value={signup.name}
+                onChange={(e) => setSignUp({ ...signup, name: e.target.value })}
+              />
               <label className="label">Email</label>
               <input
                 type="email"
                 className="input mb-4 focus:outline-0"
                 placeholder="Email"
                 required
-                value={logUser.email}
+                value={signup.email}
                 onChange={(e) =>
-                  setLogUser({ ...logUser, email: e.target.value })
+                  setSignUp({ ...signup, email: e.target.value })
                 }
               />
 
@@ -93,20 +93,33 @@ const Login = () => {
                 className="input mb-2 focus:outline-0"
                 placeholder="Password"
                 required
-                value={logUser.password}
+                value={signup.password}
                 onChange={(e) =>
-                  setLogUser({ ...logUser, password: e.target.value })
+                  setSignUp({ ...signup, password: e.target.value })
+                }
+              />
+              <label className="label">Confirm Password</label>
+              <input
+                type="password"
+                className="input mb-2 focus:outline-0"
+                placeholder="Password"
+                required
+                value={signup.password_confirmation}
+                onChange={(e) =>
+                  setSignUp({
+                    ...signup,
+                    password_confirmation: e.target.value,
+                  })
                 }
               />
             </>
-            <div className="mt-4">
+            <div className="mt-2">
               <button className="btn btn-primary w-full" type="submit">
-                Login
+                Register
               </button>
             </div>
             <p>
-              Dont have an account?{" "}
-              <Link href={"/register"}>Register Here</Link>
+              Already have an account? <Link href={"/login"}>Login Here</Link>
             </p>
           </form>
         </fieldset>
@@ -115,4 +128,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

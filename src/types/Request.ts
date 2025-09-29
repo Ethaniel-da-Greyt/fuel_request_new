@@ -1,5 +1,5 @@
 export type Request = {
-  id: number;
+  id: string;
   formatted_date: string;
   request_id: string;
   requestor_name: string;

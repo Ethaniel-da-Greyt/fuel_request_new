@@ -8,17 +8,32 @@ const Navbar = () => {
     <div>
       <div className="navbar bg-base-100 shadow-sm">
         <div className="flex-1">
-          <a className="btn btn-ghost text-xl">Fuel Request</a>
+          {role == "admin" ? (
+            <>
+              <Link href={"/admin/Display"} className="cursor-pointer text-xl">
+                Fuel Request
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href={"/user/UserDashboard"}
+                className="cursor-pointer text-xl"
+              >
+                Fuel Request
+              </Link>
+            </>
+          )}
         </div>
         <div className="flex gap-2">
           <div className="dropdown dropdown-end">
             <div
-            //   tabIndex={0}
-            //   role="button"
-            //   className="btn btn-ghost btn-circle avatar"
+              tabIndex={0}
+              role="button"
+              className="btn btn-ghost btn-circle avatar"
             >
               <label className="btn btn-circle swap swap-rotate" role="button">
-                {/* this hidden checkbox controls the state */}
+                {/* this hidden checkbox controls the icon state */}
                 <input type="checkbox" />
 
                 {/* hamburger icon */}
@@ -44,9 +59,11 @@ const Navbar = () => {
                 </svg>
               </label>
             </div>
+
+            {/* The menu */}
             <ul
               tabIndex={0}
-              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-52 p-2 shadow"
             >
               {token ? (
                 role !== "requestor" ? (

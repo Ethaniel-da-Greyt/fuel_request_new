@@ -6,6 +6,11 @@ export type ApiResponse = {
   status?: number;
 };
 
+export type ErrorMsg = {
+  message?: string;
+  error?: string;
+};
+
 export type LaravelResponse = {
   status: number;
   error: string;
