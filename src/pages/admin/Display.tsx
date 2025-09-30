@@ -1,25 +1,20 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import Dashboard from "./dashboard";
 import { Request } from "@/types/Request";
-import { ApiResponse } from "@/types/ApiResponse";
-import { useRouter } from "next/router";
-import Modal from "@/components/Modal";
+// import { useRouter } from "next/router";
 import { useFuel } from "@/context/FuelRequestContext";
+import Modal from "@/components/Modal";
+import { CheckIcon, XMarkIcon } from "@heroicons/react/16/solid";
+import { useAuth } from "@/context/AuthContext";
 
 const getData = `${process.env.NEXT_PUBLIC_APP_URL}/fuel-requests`;
-const getApprove = `${process.env.NEXT_PUBLIC_APP_URL}/approve`;
-const getReject = `${process.env.NEXT_PUBLIC_APP_URL}/reject`;
 
 const Display = () => {
-  const route = useRouter();
-  const { reject, approveRequest } = useFuel();
+  // const route = useRouter();
+  const { logout } = useAuth();
+  const { reject, approveRequest, ucfirst } = useFuel();
   const [data, setData] = useState<Request[]>([]);
   const [search, setSearch] = useState("");
-  const [errmsg, setErrmsg] = useState<ApiResponse>({
-    status: 0,
-    error: "",
-    message: "",
-  });
 
   const request = useCallback(async (search = "") => {
     const res = await fetch(`${getData}?search=${search}`, {
@@ -27,6 +22,7 @@ const Display = () => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
 
@@ -46,22 +42,16 @@ const Display = () => {
   };
 
   const rejectBtn = async (id: string) => {
-    try {
-      if (await reject(id)) request();
-    } catch (error) {
-      console.log("Error: ", error);
-    }
+    reject(id);
+    request();
   };
-  const approveBtn = async (r_id: string) => {
-    try {
-      if (await approveRequest(r_id)) request();
-    } catch (error) {
-      console.log("Error: ", error);
-    }
+  const approveBtn = (r_id: string) => {
+    approveRequest(r_id);
+    request();
   };
 
-  const badger = (status: string) => {
-    switch (status) {
+  const badge = (key: string) => {
+    switch (key) {
       case "approve":
         return "badge-success";
       case "reject":
@@ -73,16 +63,14 @@ const Display = () => {
 
   useEffect(() => {
     if (!localStorage.getItem("token")) {
-      route.replace("/");
+      logout();
     }
     const UserRole = localStorage.getItem("role");
     if (UserRole !== "admin") {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      route.replace("/");
+      logout();
     }
     request();
-  }, [request, route]);
+  }, [request, logout]);
 
   return (
     <>
@@ -125,39 +113,15 @@ const Display = () => {
                       <td>{d.requestor_office}</td>
                       <td>{d.fuel_type}</td>
                       <td>
-                        <span
-                          className={`badge ${badger(
-                            d.status
-                          )} text-white font-semibold`}
-                        >
-                          {d.status}
-                        </span>
-                      </td>
-                      <td>
-                        <button
-                          className="btn btn-info rounded-2xl text-white"
-                          onClick={() => {
-                            const modal = document.getElementById(
-                              `${d.id}`
-                            ) as HTMLDialogElement;
-                            modal?.showModal();
-                          }}
-                        >
-                          View
-                        </button>
-
-                        <dialog id={`${d.id}`} className="modal">
-                          <div className="modal-box">
-                            <form method="dialog">
-                              {/* if there is a button in form, it will close the modal */}
-                              <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-                                ✕
-                              </button>
-                            </form>
-                            <h3 className="font-bold text-lg text-left mb-2">
-                              {d.request_id}
-                            </h3>
-                            <div className=" mb-2 border-b-2"></div>
+                        {d.status && (
+                          <Modal
+                            buttonLabel={ucfirst(d.status)}
+                            className={`badge ${badge(
+                              d.status
+                            )} text-white cursor-pointer`}
+                            title={d.request_id}
+                            id={`view${d.id}`}
+                          >
                             <table className="table-auto w-full text-sm flex justify-center">
                               <tbody>
                                 <tr className="border-0">
@@ -211,31 +175,35 @@ const Display = () => {
                               </tbody>
                             </table>
                             <div className="modal-action">
-                              <form>
-                                <div className="flex gap-2">
-                                  {d.status == "pending" ? (
-                                    <>
-                                      <button
-                                        onClick={() => approveBtn(d.id)}
-                                        className="btn btn-success text-white rounded-2xl"
-                                      >
-                                        Approve
-                                      </button>
-                                      <button
-                                        onClick={() => rejectBtn(d.id)}
-                                        className="btn btn-error text-white rounded-2xl"
-                                      >
-                                        Reject
-                                      </button>
-                                    </>
-                                  ) : (
-                                    <></>
-                                  )}
-                                </div>
-                              </form>
+                              <div className="flex gap-2"></div>
                             </div>
+                          </Modal>
+                        )}
+                      </td>
+                      <td>
+                        {d.status == "pending" ? (
+                          <div className="flex gap-2 justify-center">
+                            <span
+                              onClick={() => approveBtn(d.id)}
+                              className="btn btn-success btn-sm text-white rounded"
+                            >
+                              <CheckIcon className="size-5 text-white" />
+                              Approve
+                            </span>
+                            <span
+                              onClick={() => rejectBtn(d.id)}
+                              className="btn btn-error btn-sm text-white rounded"
+                            >
+                              <XMarkIcon className="size-5 text-white" /> Reject
+                            </span>
                           </div>
-                        </dialog>
+                        ) : (
+                          <>
+                            <span className="badge badge-neutral px-5 font-semibold">
+                              None
+                            </span>
+                          </>
+                        )}
                       </td>
                     </tr>
                   ))}

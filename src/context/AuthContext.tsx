@@ -1,4 +1,3 @@
-import { error } from "console";
 import { useRouter } from "next/router";
 import {
   createContext,
@@ -157,6 +156,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  //logout
   const logout = useCallback(async () => {
     try {
       const getToken = localStorage.getItem("token");

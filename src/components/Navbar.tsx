@@ -8,22 +8,26 @@ const Navbar = () => {
     <div>
       <div className="navbar bg-base-100 shadow-sm">
         <div className="flex-1">
-          {role == "admin" ? (
-            <>
-              <Link href={"/admin/Display"} className="cursor-pointer text-xl">
-                Fuel Request
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link
-                href={"/user/UserDashboard"}
-                className="cursor-pointer text-xl"
-              >
-                Fuel Request
-              </Link>
-            </>
-          )}
+          {token &&
+            (role !== "admin" ? (
+              <>
+                <Link
+                  href={"/admin/Display"}
+                  className="cursor-pointer text-xl hover:text-orange-500 hover:font-semibold"
+                >
+                  Fuel Request
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href={"/user/UserDashboard"}
+                  className="cursor-pointer text-xl"
+                >
+                  Fuel Request
+                </Link>
+              </>
+            ))}
         </div>
         <div className="flex gap-2">
           <div className="dropdown dropdown-end">
@@ -66,7 +70,7 @@ const Navbar = () => {
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-52 p-2 shadow"
             >
               {token ? (
-                role !== "requestor" ? (
+                role == "requestor" ? (
                   <>
                     <li>
                       <a className="justify-between">
@@ -75,18 +79,17 @@ const Navbar = () => {
                       </a>
                     </li>
                     <li>
-                      <Link href={"Display"}>Active Requests</Link>
-                    </li>
-                    <li>
-                      <Link href={"History_Request"}>Request History</Link>
-                    </li>
-
-                    <li>
                       <button onClick={logout}>Logout</button>
                     </li>
                   </>
                 ) : (
                   <>
+                    <li>
+                      <Link href={"Display"}>Active Requests</Link>
+                    </li>
+                    <li>
+                      <Link href={"History_Request"}>Request History</Link>
+                    </li>
                     <li>
                       <button onClick={logout}>Logout</button>
                     </li>

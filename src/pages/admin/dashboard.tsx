@@ -4,7 +4,9 @@ import React, { ReactNode } from "react";
 const Dashboard = ({ children }: { children: ReactNode }) => {
   return (
     <>
-      <Layout>{children}</Layout>
+      <Layout>
+        <div className="mb-2">{children}</div>
+      </Layout>
     </>
   );
 };

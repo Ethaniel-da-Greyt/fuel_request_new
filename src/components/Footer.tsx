@@ -2,7 +2,7 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <div className="flex justify-end items-end">
+    <div className="">
       <footer className="footer sm:footer-horizontal footer-center bg-base-300 text-base-content p-4">
         <aside>
           <p>

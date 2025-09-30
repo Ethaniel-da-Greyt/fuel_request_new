@@ -1,10 +1,11 @@
-import { error } from "console";
 import React, { createContext, ReactNode, useContext } from "react";
 import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 
 interface ReqResponse {
-  error?: string;
-  message?: string;
+  success: boolean;
+  error?: string | null;
+  message?: string | null;
 }
 
 interface FuelProviderType {
@@ -26,6 +27,10 @@ interface FuelProviderType {
 
   approveRequest: (request_id: string) => Promise<ReqResponse>;
 
+  resubmitRequest: (request_id: string) => Promise<ReqResponse>;
+
+  ucfirst: (key: string) => string;
+
   updateRequest: (
     request_id: string | "",
     requestor_name: string | "",
@@ -41,7 +46,9 @@ const FuelContext = createContext<FuelProviderType | undefined>(undefined);
 
 const make = `${process.env.NEXT_PUBLIC_APP_URL}/add`;
 const updateApi = `${process.env.NEXT_PUBLIC_APP_URL}/update/`;
+const resubmitApi = `${process.env.NEXT_PUBLIC_APP_URL}/resubmit/`;
 const deleteApi = `${process.env.NEXT_PUBLIC_APP_URL}/delete/`;
+const rejectApi = `${process.env.NEXT_PUBLIC_APP_URL}/reject/`;
 const approveApi = `${process.env.NEXT_PUBLIC_APP_URL}/approve/`;
 const cancelApi = `${process.env.NEXT_PUBLIC_APP_URL}/cancel/`;
 
@@ -86,89 +93,236 @@ export const FuelProvider = ({ children }: { children: ReactNode }) => {
 
   //cancel Request
   const cancel = async (request_id: string) => {
-    const canc = await fetch(cancelApi + request_id, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
+    const sweet = await Swal.fire({
+      title: "Are you sure?",
+      text: "To undo this action just click the resubmit button.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Proceed",
+      cancelButtonText: "Cancel",
     });
 
-    const resp = await canc.json();
-    if (!canc.ok) {
-      return { error: resp?.error, message: resp?.message };
+    if (!sweet.isConfirmed) {
+      return { success: false, message: "cancel" };
     }
 
-    toast.success("Request Canceled Successfully");
-    return { ...resp, error: resp?.error, message: resp?.message };
-  };
+    try {
+      const canc = await fetch(cancelApi + request_id, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-  const deleteRequest = async (request_id: string) => {
-    const res = await fetch(deleteApi + request_id, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+      const resp = await canc.json();
+      if (!canc.ok) {
+        toast.error(`Error: ${resp?.error}`);
+        return { error: resp?.error, message: resp?.message };
+      }
 
-    const response = await res.json();
-    if (!res.ok) {
-      toast.error("Error: ", response?.message);
+      Swal.fire("Canceled!", "Request Canceled", "success");
+      toast.success("Request Canceled Successfully");
+      return { ...resp, error: resp?.error, message: resp?.message };
+    } catch (error) {
       return {
-        ...response,
-        error: response?.error,
-        message: response?.message,
+        success: false,
+        messsage: "Network Error",
+        error: (error as Error).message,
       };
     }
-
-    toast.success("Request Deleted Successfully!");
   };
 
-  const approveRequest = async (request_id: string) => {
-    const resp = await fetch(approveApi + request_id, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
+  //Resubmit Request
+  const resubmitRequest = async (request_id: string) => {
+    const sweetalert = await Swal.fire({
+      title: "Are you sure?",
+      text: "To undo this action just cancel the request.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Resubmit Request",
+      cancelButtonText: "No, Cancel!",
     });
 
-    const res = await resp.json();
-    if (!resp.ok) {
-      toast.error("Error Occured", res?.error);
-      return { ...res, error: res?.error, message: res?.message };
+    if (!sweetalert.isConfirmed) {
+      return { success: false, message: "canceled" };
     }
 
-    toast.success("Request Approved Successfully!");
-    return { ...res, error: res?.error, message: res?.message };
+    try {
+      const res = await fetch(resubmitApi + request_id, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const resp = await res.json();
+
+      if (!res.ok) {
+        toast.error(`Error: ${resp?.error}`);
+        return { success: false, message: resp?.message };
+      }
+
+      Swal.fire("Resubmit!", "Request Resubmitted!", "success");
+      return { success: true, message: "Request Resubmit" };
+    } catch (error) {
+      return {
+        success: false,
+        message: "Network Error",
+        error: (error as Error).message,
+      };
+    }
+  };
+
+  //Delete Request
+  const deleteRequest = async (request_id: string): Promise<ReqResponse> => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won’t be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "No, cancel!",
+    });
+
+    if (!result.isConfirmed) {
+      return { success: false, message: "Cancelled by user" };
+    }
+
+    try {
+      const res = await fetch(deleteApi + request_id, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const response = await res.json();
+
+      if (!res.ok) {
+        toast.error(`Error: ${response?.message}`);
+        return {
+          success: false,
+          message: response?.message || "Failed",
+          error: response?.error,
+        };
+      }
+
+      Swal.fire("Deleted!", "Your item has been removed.", "success");
+      toast.success("Request Deleted Successfully!");
+
+      return { success: true, message: "Deleted successfully" };
+    } catch (error) {
+      return {
+        success: false,
+        message: "Network error",
+        error: (error as Error).message,
+      };
+    }
+  };
+
+  //UcFirst Function
+  const ucfirst = (key: string) => {
+    if (!key) return "";
+
+    return key.charAt(0).toUpperCase() + key.slice(1);
+  };
+
+  //Approve
+  const approveRequest = async (request_id: string) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won’t be able to revert this!",
+      icon: "warning",
+      returnFocus: false,
+      showCancelButton: true,
+      confirmButtonText: "Yes, Approve it!",
+      cancelButtonText: "No, cancel!",
+    });
+
+    if (!result.isConfirmed) {
+      return { success: false, message: "Cancelled by user" };
+    }
+
+    try {
+      const resp = await fetch(approveApi + request_id, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const response = await resp.json();
+
+      if (!resp.ok) {
+        toast.error(`Error: ${response?.message}`);
+        return {
+          success: false,
+          message: response?.message || "Failed",
+          error: response?.error,
+        };
+      }
+
+      Swal.fire("Approved!", "Request has been approved.", "success");
+      toast.success("Request Approved!");
+
+      return { success: true, message: "Approved successfully" };
+    } catch (error) {
+      return {
+        success: false,
+        message: "Network error",
+        error: (error as Error).message,
+      };
+    }
   };
 
   //Reject Request
   const reject = async (id: string) => {
+    const res = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Reject it!",
+      cancelButtonText: "No, cancel!",
+    });
+
+    if (!res.isConfirmed) {
+      return { success: false, message: "canceled" };
+    }
+
     try {
-      const rejects = await fetch(`${updateApi}/` + id);
+      const response = await fetch(rejectApi + id, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-      if (!rejects.ok) {
-        console.log("Fail to Approve");
+      const resp = await response.json();
+
+      if (!response.ok) {
+        toast.error(`Error: ${resp?.message}`);
+        return { success: true, error: resp?.error, message: resp?.message };
       }
-      const resp = await rejects.json();
-
-      if (!rejects.ok) {
-        toast.error("Error: ", resp?.error);
-      }
-
       toast.success("Request Rejected Successfully!");
-
+      Swal.fire("Rejected!", "Request rejected.", "success");
       return { ...resp, error: resp?.error, message: resp?.message };
     } catch (error) {
       console.log("Error: ", error);
     }
   };
 
+  //Update Request
   const updateRequest = async (
     request_id: string,
     requestor_name: string,
@@ -198,6 +352,7 @@ export const FuelProvider = ({ children }: { children: ReactNode }) => {
     const res = await updt.json();
 
     if (!updt.ok) {
+      console.log(res);
       return { ...res, error: res?.error, message: res?.message };
     }
 
@@ -213,6 +368,8 @@ export const FuelProvider = ({ children }: { children: ReactNode }) => {
         updateRequest,
         deleteRequest,
         approveRequest,
+        resubmitRequest,
+        ucfirst,
       }}
     >
       {children}

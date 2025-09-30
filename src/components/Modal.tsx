@@ -5,7 +5,7 @@ interface ModalProps {
   buttonLabel?: string;
   title?: string;
   children: React.ReactNode;
-  className: string;
+  className?: string;
   onClick?: () => void;
 }
 

@@ -99,6 +99,12 @@ const Login = () => {
                 }
               />
             </>
+            <Link
+              href={"forgot-password"}
+              className="text-primary flex justify-end font-semibold"
+            >
+              Forgot Password
+            </Link>
             <div className="mt-4">
               <button className="btn btn-primary w-full" type="submit">
                 Login

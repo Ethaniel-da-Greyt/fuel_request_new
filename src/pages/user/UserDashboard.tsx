@@ -27,7 +27,14 @@ const UserDashboard = () => {
     fuel_type: "",
   });
 
-  const { makeRequest, cancel, updateRequest, deleteRequest } = useFuel();
+  const {
+    makeRequest,
+    cancel,
+    updateRequest,
+    deleteRequest,
+    ucfirst,
+    resubmitRequest,
+  } = useFuel();
 
   const handleUpdate = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -120,11 +127,10 @@ const UserDashboard = () => {
       if ((await makeReqst).error) {
         toast.error(`Error: ${(await makeReqst).message}`);
       }
-
-      viewRequest();
     } catch (error) {
       console.log("Error: ", error);
     }
+    viewRequest();
   }, [
     makeRequest,
     req.fuel_type,
@@ -289,248 +295,293 @@ const UserDashboard = () => {
                               d.status
                             )} text-white font-semibold`}
                           >
-                            {d.status}
+                            {ucfirst(d.status)}
                           </span>
                         </td>
                         <td>
-                          <Modal
-                            buttonLabel="View"
-                            id={d.id}
-                            title={d.request_id}
-                            className="btn btn-info rounded"
-                          >
-                            <table className="table-auto w-full text-sm flex justify-center">
-                              <tbody>
-                                <tr className="border-0">
-                                  <td className="font-semibold text-left py-1 w-1/3">
-                                    Office:
-                                  </td>
-                                  <td className="text-left py-1">
-                                    {d.requestor_office}
-                                  </td>
-                                </tr>
-                                <tr className="border-0">
-                                  <td className="font-semibold text-left py-1">
-                                    Office Head:
-                                  </td>
-                                  <td className="text-left py-1">
-                                    {d.requestor_head_office}
-                                  </td>
-                                </tr>
-                                <tr className="border-0">
-                                  <td className="font-semibold text-left py-1">
-                                    Requestor:
-                                  </td>
-                                  <td className="text-left py-1">
-                                    {d.requestor_name}
-                                  </td>
-                                </tr>
-                                <tr className="border-0">
-                                  <td className="font-semibold text-left py-1">
-                                    Vehicle:
-                                  </td>
-                                  <td className="text-left py-1">
-                                    {d.vehicle}
-                                  </td>
-                                </tr>
-                                <tr className="border-0">
-                                  <td className="font-semibold text-left py-1">
-                                    Plate #:
-                                  </td>
-                                  <td className="text-left py-1">
-                                    {d.plate_no}
-                                  </td>
-                                </tr>
-                                <tr className="border-0">
-                                  <td className="font-semibold text-left py-1">
-                                    Fuel Type:
-                                  </td>
-                                  <td className="text-left py-1">
-                                    {d.fuel_type}
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                            <div className="modal-action">
-                              <div className="flex gap-2">
-                                {d.status == "pending" ? (
-                                  <>
-                                    <button
-                                      onClick={() => cancelbtn(d.id)}
-                                      className="btn btn-warning text-white rounded"
-                                    >
-                                      Cancel Request
-                                    </button>
-                                  </>
-                                ) : d.status == "canceled" ? (
-                                  <>
-                                    <Modal
-                                      onClick={() =>
-                                        setUpdate({
-                                          request_id: d.request_id,
-                                          requestor_name: d.requestor_name,
-                                          requestor_office: d.requestor_office,
-                                          requestor_head_office:
-                                            d.requestor_head_office,
-                                          plate_no: d.plate_no,
-                                          vehicle: d.vehicle,
-                                          fuel_type: d.fuel_type,
-                                        })
-                                      }
-                                      buttonLabel="Update"
-                                      title="Update Request"
-                                      id={`update${d.id}`}
-                                      className="btn btn-primary rounded"
-                                    >
-                                      <form
-                                        className="text-left"
-                                        onSubmit={(e) => handleUpdate(e)}
+                          <div className="flex items-center justify-center gap-2">
+                            <Modal
+                              buttonLabel="View"
+                              id={d.id}
+                              title={d.request_id}
+                              className="btn btn-info rounded btn-sm"
+                            >
+                              <table className="table-auto w-full text-sm flex justify-center">
+                                <tbody>
+                                  <tr className="border-0">
+                                    <td className="font-semibold text-left py-1 w-1/3">
+                                      Office:
+                                    </td>
+                                    <td className="text-left py-1">
+                                      {d.requestor_office}
+                                    </td>
+                                  </tr>
+                                  <tr className="border-0">
+                                    <td className="font-semibold text-left py-1">
+                                      Office Head:
+                                    </td>
+                                    <td className="text-left py-1">
+                                      {d.requestor_head_office}
+                                    </td>
+                                  </tr>
+                                  <tr className="border-0">
+                                    <td className="font-semibold text-left py-1">
+                                      Requestor:
+                                    </td>
+                                    <td className="text-left py-1">
+                                      {d.requestor_name}
+                                    </td>
+                                  </tr>
+                                  <tr className="border-0">
+                                    <td className="font-semibold text-left py-1">
+                                      Vehicle:
+                                    </td>
+                                    <td className="text-left py-1">
+                                      {d.vehicle}
+                                    </td>
+                                  </tr>
+                                  <tr className="border-0">
+                                    <td className="font-semibold text-left py-1">
+                                      Plate #:
+                                    </td>
+                                    <td className="text-left py-1">
+                                      {d.plate_no}
+                                    </td>
+                                  </tr>
+                                  <tr className="border-0">
+                                    <td className="font-semibold text-left py-1">
+                                      Fuel Type:
+                                    </td>
+                                    <td className="text-left py-1">
+                                      {d.fuel_type}
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              <div className="modal-action">
+                                <div className="flex gap-2">
+                                  {d.status == "pending" ? (
+                                    <></>
+                                  ) : d.status == "canceled" ? (
+                                    <>
+                                      <Modal
+                                        onClick={() =>
+                                          setUpdate({
+                                            request_id: d.request_id,
+                                            requestor_name: d.requestor_name,
+                                            requestor_office:
+                                              d.requestor_office,
+                                            requestor_head_office:
+                                              d.requestor_head_office,
+                                            plate_no: d.plate_no,
+                                            vehicle: d.vehicle,
+                                            fuel_type: d.fuel_type,
+                                          })
+                                        }
+                                        buttonLabel="Update"
+                                        title="Update Request"
+                                        id={`update${d.id}`}
+                                        className="btn btn-primary rounded"
                                       >
-                                        <div className="p-3">
-                                          <div className="mb-2">
-                                            <label htmlFor="" className="label">
-                                              Requestor Name
-                                            </label>
-                                            <input
-                                              type="text"
-                                              value={update.requestor_name}
-                                              onChange={(e) =>
-                                                setUpdate({
-                                                  ...update,
-                                                  requestor_name:
-                                                    e.target.value,
-                                                })
-                                              }
-                                              className="input w-full focus:outline-none"
-                                              placeholder="Your Name"
-                                              required
-                                            />
+                                        <form
+                                          className="text-left"
+                                          onSubmit={(e) => handleUpdate(e)}
+                                        >
+                                          <div className="p-3">
+                                            <div className="mb-2">
+                                              <label
+                                                htmlFor=""
+                                                className="label"
+                                              >
+                                                Requestor Name
+                                              </label>
+                                              <input
+                                                type="hidden"
+                                                value={update.request_id}
+                                                onChange={(e) =>
+                                                  setUpdate({
+                                                    ...update,
+                                                    request_id: e.target.value,
+                                                  })
+                                                }
+                                              />
+                                              <input
+                                                type="text"
+                                                value={update.requestor_name}
+                                                onChange={(e) =>
+                                                  setUpdate({
+                                                    ...update,
+                                                    requestor_name:
+                                                      e.target.value,
+                                                  })
+                                                }
+                                                className="input w-full focus:outline-none"
+                                                placeholder="Your Name"
+                                                required
+                                              />
+                                            </div>
+                                            <div className="mb-2">
+                                              <label
+                                                htmlFor=""
+                                                className="label"
+                                              >
+                                                Office
+                                              </label>
+                                              <input
+                                                type="text"
+                                                value={update.requestor_office}
+                                                onChange={(e) =>
+                                                  setUpdate({
+                                                    ...update,
+                                                    requestor_office:
+                                                      e.target.value,
+                                                  })
+                                                }
+                                                className="input w-full focus:outline-none"
+                                                placeholder="Requestor's Office"
+                                                required
+                                              />
+                                            </div>
+                                            <div className="mb-2">
+                                              <label
+                                                htmlFor=""
+                                                className="label"
+                                              >
+                                                Office Head
+                                              </label>
+                                              <input
+                                                type="text"
+                                                value={
+                                                  update.requestor_head_office
+                                                }
+                                                onChange={(e) =>
+                                                  setUpdate({
+                                                    ...update,
+                                                    requestor_head_office:
+                                                      e.target.value,
+                                                  })
+                                                }
+                                                placeholder="Head Office"
+                                                required
+                                                className="input w-full focus:outline-none"
+                                              />
+                                            </div>
+                                            <div className="mb-2">
+                                              <label
+                                                htmlFor=""
+                                                className="label"
+                                              >
+                                                Plate #
+                                              </label>
+                                              <input
+                                                type="text"
+                                                required
+                                                value={update.plate_no}
+                                                onChange={(e) =>
+                                                  setUpdate({
+                                                    ...update,
+                                                    plate_no: e.target.value,
+                                                  })
+                                                }
+                                                placeholder="Plate # ex.: AE45OS"
+                                                className="input w-full focus:outline-none"
+                                              />
+                                            </div>
+                                            <div className="mb-2">
+                                              <label
+                                                htmlFor=""
+                                                className="label"
+                                              >
+                                                Vehicle
+                                              </label>
+                                              <input
+                                                type="text"
+                                                value={update.vehicle}
+                                                onChange={(e) =>
+                                                  setUpdate({
+                                                    ...update,
+                                                    vehicle: e.target.value,
+                                                  })
+                                                }
+                                                required
+                                                placeholder="Ex. Bongo"
+                                                className="input w-full focus:outline-none"
+                                              />
+                                            </div>
+                                            <div className="mb-2">
+                                              <label
+                                                htmlFor=""
+                                                className="label"
+                                              >
+                                                Fuel Type
+                                              </label>
+                                              <select
+                                                value={update.fuel_type}
+                                                onChange={(e) =>
+                                                  setUpdate({
+                                                    ...update,
+                                                    fuel_type: e.target.value,
+                                                  })
+                                                }
+                                                className="select w-full active:outline-none focus:outline-none"
+                                              >
+                                                <option value="Special">
+                                                  Special
+                                                </option>
+                                                <option value="Unleaded">
+                                                  Unleaded
+                                                </option>
+                                                <option value="Diesel">
+                                                  Diesel
+                                                </option>
+                                              </select>
+                                            </div>
+                                            <div className="mt-3 flex justify-end items-end">
+                                              <button className="btn btn-success rounded">
+                                                Update Request
+                                              </button>
+                                            </div>
                                           </div>
-                                          <div className="mb-2">
-                                            <label htmlFor="" className="label">
-                                              Office
-                                            </label>
-                                            <input
-                                              type="text"
-                                              value={update.requestor_office}
-                                              onChange={(e) =>
-                                                setUpdate({
-                                                  ...update,
-                                                  requestor_office:
-                                                    e.target.value,
-                                                })
-                                              }
-                                              className="input w-full focus:outline-none"
-                                              placeholder="Requestor's Office"
-                                              required
-                                            />
-                                          </div>
-                                          <div className="mb-2">
-                                            <label htmlFor="" className="label">
-                                              Office Head
-                                            </label>
-                                            <input
-                                              type="text"
-                                              value={
-                                                update.requestor_head_office
-                                              }
-                                              onChange={(e) =>
-                                                setUpdate({
-                                                  ...update,
-                                                  requestor_head_office:
-                                                    e.target.value,
-                                                })
-                                              }
-                                              placeholder="Head Office"
-                                              required
-                                              className="input w-full focus:outline-none"
-                                            />
-                                          </div>
-                                          <div className="mb-2">
-                                            <label htmlFor="" className="label">
-                                              Plate #
-                                            </label>
-                                            <input
-                                              type="text"
-                                              required
-                                              value={update.plate_no}
-                                              onChange={(e) =>
-                                                setUpdate({
-                                                  ...update,
-                                                  plate_no: e.target.value,
-                                                })
-                                              }
-                                              placeholder="Plate # ex.: AE45OS"
-                                              className="input w-full focus:outline-none"
-                                            />
-                                          </div>
-                                          <div className="mb-2">
-                                            <label htmlFor="" className="label">
-                                              Vehicle
-                                            </label>
-                                            <input
-                                              type="text"
-                                              value={update.vehicle}
-                                              onChange={(e) =>
-                                                setUpdate({
-                                                  ...update,
-                                                  vehicle: e.target.value,
-                                                })
-                                              }
-                                              required
-                                              placeholder="Ex. Bongo"
-                                              className="input w-full focus:outline-none"
-                                            />
-                                          </div>
-                                          <div className="mb-2">
-                                            <label htmlFor="" className="label">
-                                              Fuel Type
-                                            </label>
-                                            <select
-                                              value={update.fuel_type}
-                                              onChange={(e) =>
-                                                setUpdate({
-                                                  ...update,
-                                                  fuel_type: e.target.value,
-                                                })
-                                              }
-                                              className="select w-full active:outline-none focus:outline-none"
-                                            >
-                                              <option value="Special">
-                                                Special
-                                              </option>
-                                              <option value="Unleaded">
-                                                Unleaded
-                                              </option>
-                                              <option value="Diesel">
-                                                Diesel
-                                              </option>
-                                            </select>
-                                          </div>
-                                          <div className="mt-3 flex justify-end items-end">
-                                            <button className="btn btn-success rounded">
-                                              Update Request
-                                            </button>
-                                          </div>
-                                        </div>
-                                      </form>
-                                    </Modal>
+                                        </form>
+                                      </Modal>
 
-                                    {/*  */}
+                                      {/*  */}
 
-                                    <button
-                                      onClick={() => handleDelete(d.request_id)}
-                                      className="btn btn-error rounded"
-                                    >
-                                      Remove
-                                    </button>
-                                  </>
-                                ) : (
-                                  <></>
-                                )}
+                                      <button
+                                        onClick={() =>
+                                          handleDelete(d.request_id)
+                                        }
+                                        className="btn btn-error rounded"
+                                      >
+                                        Remove
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <></>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          </Modal>
+                            </Modal>
+                            {d.status == "canceled" ? (
+                              <>
+                                <button
+                                  onClick={() => resubmitRequest(d.request_id)}
+                                  className="btn btn-warning btn-sm rounded"
+                                >
+                                  Resubmit
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => cancel(d.request_id)}
+                                  className="btn btn-error btn-sm rounded"
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
