@@ -5,10 +5,11 @@ import React, { useState } from "react";
 const ForgotPassword = () => {
   const { sendEmail } = useForgotPassword();
   const [email, setEmail] = useState("");
+  // const [message, setMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    sendEmail(email);
+    await sendEmail(email);
   };
   return (
     <div className="flex items-center justify-center min-h-screen bg-base-200">
@@ -19,7 +20,8 @@ const ForgotPassword = () => {
             Enter your email and we’ll send you a reset link.
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+          <form onSubmit={handleForgotPassword} className="mt-4 space-y-4">
+            {/* <p>{message}</p> */}
             <input
               type="email"
               placeholder="Enter your email"

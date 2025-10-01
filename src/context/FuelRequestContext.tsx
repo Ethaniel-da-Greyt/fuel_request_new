@@ -8,7 +8,7 @@ interface ReqResponse {
   message?: string | null;
 }
 
-interface FuelProviderType {
+type FuelProviderType = {
   makeRequest: (
     requestor_id: string,
     requestor_name: string,
@@ -40,7 +40,7 @@ interface FuelProviderType {
     vehicle: string | "",
     fuel_type: string | ""
   ) => Promise<ReqResponse>;
-}
+};
 
 const FuelContext = createContext<FuelProviderType | undefined>(undefined);
 
@@ -180,7 +180,7 @@ export const FuelProvider = ({ children }: { children: ReactNode }) => {
   //Delete Request
   const deleteRequest = async (request_id: string): Promise<ReqResponse> => {
     const result = await Swal.fire({
-      title: "Are you sure?",
+      title: "Are you sure you want to delete this?",
       text: "You won’t be able to revert this!",
       icon: "warning",
       showCancelButton: true,
@@ -239,7 +239,6 @@ export const FuelProvider = ({ children }: { children: ReactNode }) => {
       title: "Are you sure?",
       text: "You won’t be able to revert this!",
       icon: "warning",
-      returnFocus: false,
       showCancelButton: true,
       confirmButtonText: "Yes, Approve it!",
       cancelButtonText: "No, cancel!",

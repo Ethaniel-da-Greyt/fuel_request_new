@@ -2,6 +2,7 @@ import Layout from "@/components/Layout";
 import Modal from "@/components/Modal";
 import { useFuel } from "@/context/FuelRequestContext";
 import { Request } from "@/types/Request";
+import { TrashIcon } from "@heroicons/react/16/solid";
 import React, { FormEvent, useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -277,7 +278,7 @@ const UserDashboard = () => {
                     <th>Office</th>
                     <th>Fuel Type</th>
                     <th>Status</th>
-                    <th>Action</th>
+                    <th className="text-start">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -299,7 +300,7 @@ const UserDashboard = () => {
                           </span>
                         </td>
                         <td>
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center justify-start gap-2">
                             <Modal
                               buttonLabel="View"
                               id={d.id}
@@ -546,15 +547,6 @@ const UserDashboard = () => {
                                       </Modal>
 
                                       {/*  */}
-
-                                      <button
-                                        onClick={() =>
-                                          handleDelete(d.request_id)
-                                        }
-                                        className="btn btn-error rounded"
-                                      >
-                                        Remove
-                                      </button>
                                     </>
                                   ) : (
                                     <></>
@@ -569,6 +561,12 @@ const UserDashboard = () => {
                                   className="btn btn-warning btn-sm rounded"
                                 >
                                   Resubmit
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(d.request_id)}
+                                  className="btn btn-error rounded btn-sm"
+                                >
+                                  <TrashIcon className="size-4 text-white" />
                                 </button>
                               </>
                             ) : (

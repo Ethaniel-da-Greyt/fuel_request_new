@@ -80,7 +80,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             status: data?.status || 400,
           };
         }
-        toast.success("Login Successfully");
         if (data.access_token) {
           if (data.role) {
             setRoles(data.role);
@@ -105,6 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 break;
             }
           }
+          toast.success("Login Successfully");
         }
 
         return {

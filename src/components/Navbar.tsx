@@ -82,7 +82,7 @@ const Navbar = () => {
                       <button onClick={logout}>Logout</button>
                     </li>
                   </>
-                ) : (
+                ) : role == "admin" ? (
                   <>
                     <li>
                       <Link href={"Display"}>Active Requests</Link>
@@ -92,6 +92,12 @@ const Navbar = () => {
                     </li>
                     <li>
                       <button onClick={logout}>Logout</button>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <Link href={"/login"}>Login</Link>
                     </li>
                   </>
                 )
