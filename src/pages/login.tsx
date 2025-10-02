@@ -43,8 +43,8 @@ const Login = () => {
   );
 
   return (
-    <div className="flex justify-center items-end">
-      <div className="">
+    <div className="flex justify-center items-end h-150">
+      <div className="flex justify-center items-end">
         <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
           <legend className="fieldset-legend text-center text-2xl">
             Login

@@ -34,7 +34,7 @@ const Register = () => {
     }
   };
   return (
-    <div className="flex justify-center items-end">
+    <div className="flex justify-center items-end h-170">
       <div className="">
         <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
           <legend className="fieldset-legend text-center text-2xl">
